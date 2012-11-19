@@ -8,7 +8,9 @@
       },
       _create: function() {
         this._super('_create');
-        return this.options.windowSize = this.options.max - this.options.min;
+        this.options.min += -1;
+        this.options.totalMin += -1;
+        return this.windowSize = this.options.max - this.options.min;
       },
       _slide: function(event, index, newValue) {
         var oldValue,
@@ -34,7 +36,6 @@
         return (this.options.min < newValue && newValue < this.options.max);
       },
       _stop: function(event, index) {
-        console.log('stop');
         this._super('_stop', event, index);
         if (this.movingWindowIntervalId) {
           this.stopMovingWindow();
@@ -43,7 +44,7 @@
             value: this.value()
           });
         }
-        return console.log(this.value());
+        return console.log("stop: " + (this.value()));
       },
       _setValue: function(key, value) {
         switch (key) {
@@ -61,6 +62,7 @@
       moveWindow: function(interval) {
         var value;
         if (this.isWindowInRange(interval)) {
+          console.log("move window " + interval);
           this.options.max += interval;
           this.options.min += interval;
           value = interval > 0 ? this.options.max : this.options.min;
@@ -79,8 +81,14 @@
       moveMarkerFromGrowingPosition: function() {
         this.options.min += this.change;
         this.options.max += this.change;
-        this.options.value = 1;
+        console.log("premin: " + this.options.min + ", max: " + this.options.max + ", change: " + this.change);
         this.makeSureWheaterWindowMetsGlobalMinMax();
+        if (this.options.value === this.options.totalMin) {
+          this.options.value = this.options.totalMin + 1;
+        } else if (this.options.value === this.options.totalMax) {
+          this.options.value = this.options.totalMax - 1;
+        }
+        console.log("min: " + this.options.min + ", max: " + this.options.max + ", change: " + this.change);
         this.element.find('a').removeClass('growing');
         return this._refreshValue();
       },
@@ -91,7 +99,9 @@
           return this.options.min > this.options.totalMin;
         }
       },
-      reset: function() {},
+      reset: function() {
+        return this.setValue(0);
+      },
       setValue: function(value) {
         if (!((this.options.min < value && value < this.options.max))) {
           this.options.max = value + Math.round(this.windowSize / 2);
@@ -102,10 +112,10 @@
       },
       makeSureWheaterWindowMetsGlobalMinMax: function() {
         if (this.options.max > this.options.totalMax) {
-          this.options.max = this.options.totalMax + 1;
+          this.options.max = this.options.totalMax;
           return this.options.min = this.options.max - this.windowSize;
         } else if (this.options.min < this.options.totalMin) {
-          this.options.min = this.options.totalMin - 1;
+          this.options.min = this.options.totalMin;
           return this.options.max = this.options.min + this.windowSize;
         }
       }

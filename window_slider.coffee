@@ -5,7 +5,9 @@
 
   _create: ->
     @_super('_create')
-    @options.windowSize = @options.max - @options.min
+    @options.min += -1
+    @options.totalMin += -1
+    @windowSize = @options.max - @options.min
 
   _slide: (event, index, newValue) ->
     console.log("val: #{@value()}, newVal: #{newValue}")
@@ -32,7 +34,6 @@
     return @options.min < newValue < @options.max
 
   _stop: (event, index) ->
-    console.log('stop')
     @_super('_stop', event, index)
 
     if @movingWindowIntervalId
@@ -40,7 +41,7 @@
       @moveMarkerFromGrowingPosition()
 
       this._trigger( "slide", event, value: @value())
-    console.log(@value())
+    console.log("stop: #{@value()}")
 
 
   _setValue: (key, value) ->
@@ -57,9 +58,9 @@
     clearInterval(@movingWindowIntervalId)
     @movingWindowIntervalId = null
 
-
   moveWindow: (interval) ->
     if @isWindowInRange(interval)
+      console.log("move window #{interval}")
       @options.max += interval
       @options.min += interval
       value = if interval > 0 then @options.max else @options.min
@@ -75,8 +76,13 @@
   moveMarkerFromGrowingPosition: ->
     @options.min += @change
     @options.max += @change
-    @options.value = 1
+    console.log("premin: #{@options.min}, max: #{@options.max}, change: #{@change}")
     @makeSureWheaterWindowMetsGlobalMinMax()
+    if @options.value == @options.totalMin
+      @options.value = @options.totalMin + 1
+    else if @options.value == @options.totalMax
+      @options.value = @options.totalMax - 1
+    console.log("min: #{@options.min}, max: #{@options.max}, change: #{@change}")
     @element.find('a').removeClass('growing')
     @_refreshValue()
 
@@ -92,7 +98,7 @@
 
 
   reset: ->
-    #@setValue(0)
+    @setValue(0)
 
   setValue: (value) ->
     unless @options.min < value < @options.max
@@ -103,9 +109,9 @@
 
   makeSureWheaterWindowMetsGlobalMinMax: () ->
     if @options.max > @options.totalMax
-      @options.max = @options.totalMax + 1
+      @options.max = @options.totalMax
       @options.min = @options.max - @windowSize
     else if @options.min < @options.totalMin
-      @options.min = @options.totalMin - 1
+      @options.min = @options.totalMin
       @options.max = @options.min + @windowSize
 )(jQuery)
