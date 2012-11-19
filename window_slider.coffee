@@ -44,9 +44,10 @@
     console.log("stop: #{@value()}")
 
 
-  _setValue: (key, value) ->
+  _setOption: (key, value) ->
     switch(key)
       when "reset" then @reset()
+      when "value" then @setValue(value)
       else
         @_super("_setOption", key, value)
 

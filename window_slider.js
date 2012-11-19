@@ -46,10 +46,12 @@
         }
         return console.log("stop: " + (this.value()));
       },
-      _setValue: function(key, value) {
+      _setOption: function(key, value) {
         switch (key) {
           case "reset":
             return this.reset();
+          case "value":
+            return this.setValue(value);
           default:
             return this._super("_setOption", key, value);
         }
